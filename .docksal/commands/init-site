@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+## Initialize/reinstall site
+##
+## Usage: fin init-site
+
+echo -e "${green_bg}  ${NC}${green} Getting latest Provus...${NC}"
+fin composer create-project sst/provus-drupal site
+
+# fin drush si -y --account-pass=admin
+# fin drush config-set system.site uuid ${UUID} -y
+# fin drush entity:delete shortcut_set
+# fin drush cim -y
+# fin build-theme
+# fin test-content
+# fin drush pmu shortcut
+# fin drush en -y shortcut
