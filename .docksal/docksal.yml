@@ -1,1 +1,7 @@
 version: "3.9"
+ # MailHog
+services:
+  mail:
+    extends:
+      file: ${HOME}/.docksal/stacks/services.yml
+      service: mail

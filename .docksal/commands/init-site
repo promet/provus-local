@@ -1,17 +1,106 @@
 #!/usr/bin/env bash
 
+#: exec_target = cli
+
 ## Initialize/reinstall site
 ##
 ## Usage: fin init-site
 
-echo -e "${green_bg}  ${NC}${green} Getting latest Provus...${NC}"
-fin composer create-project sst/provus-drupal site
+# Abort if anything fails
+set -e
 
-# fin drush si -y --account-pass=admin
-# fin drush config-set system.site uuid ${UUID} -y
-# fin drush entity:delete shortcut_set
-# fin drush cim -y
-# fin build-theme
-# fin test-content
-# fin drush pmu shortcut
-# fin drush en -y shortcut
+#-------------------------- Settings --------------------------------
+
+# PROJECT_ROOT and DOCROOT are set as env variables in cli
+SITE_SUB_PATH="site"
+SITE_DIRECTORY="default"
+DOCROOT_PATH="${PROJECT_ROOT}/${DOCROOT}"
+SITE_CODE_PATH="${PROJECT_ROOT}/${SITE_SUB_PATH}"
+SITEDIR_PATH="${DOCROOT_PATH}/sites/${SITE_DIRECTORY}"
+
+#-------------------------- END: Settings --------------------------------
+
+#-------------------------- Helper functions --------------------------------
+
+
+# Copy a settings file.
+# Skips if the destination file already exists.
+# @param $1 source file
+# @param $2 destination file
+copy_settings_file()
+{
+	local source="$1"
+	local dest="$2"
+
+	if [[ ! -f $dest ]]; then
+		echo "Copying ${dest}..."
+		cp $source $dest
+	else
+		echo "${dest} already in place."
+	fi
+}
+
+#-------------------------- END: Helper functions --------------------------------
+
+#-------------------------- Functions --------------------------------
+
+composer_install ()
+{
+    # fresh install? no site directory.. make it!
+    if [ ! -d "/var/www/site" ]; then
+      echo -e "${green_bg}INSTALLING PROVUS${NC}${green} Getting latest Provus...${NC}"
+      composer create-project sst/provus-drupal site
+    else
+      # this is a site.. just run composer install
+      echo -e "${green_bg}UPDATING PROVUS${NC}${green} Running composer install...${SITE_SUB_PATH} ${NC}"
+      cd $SITE_CODE_PATH
+      composer install
+    fi
+}
+
+# Initialize local settings files
+init_settings ()
+{
+	# Copy from settings templates
+	copy_settings_file "${SITEDIR_PATH}/default.settings.local.php" "${SITEDIR_PATH}/settings.local.php"
+}
+
+# Fix file/folder permissions
+fix_permissions ()
+{
+	echo "Making site directory writable..."
+	chmod 755 "${SITEDIR_PATH}"
+}
+
+# Install site
+site_install ()
+{
+
+    cd $DOCROOT_PATH
+
+	# We disable email sending here so site-install does not return an error
+	# Credit: https://www.drupal.org/project/phpconfig/issues/1826652#comment-12071700
+	drush site-install provus -y \
+		install_configure_form.enable_update_status_module=NULL \
+		--site-name="PROVUS" \
+        provus_extension_configure_form.select_all='TRUE'
+}
+
+
+#-------------------------- END: Functions --------------------------------
+
+#-------------------------- Execution --------------------------------
+
+# Project initialization steps
+composer_install
+fix_permissions
+init_settings
+time site_install
+
+## TODO: Check if the config UUID doesn't match the UUID in the DB.
+#fin drush config-set system.site uuid ${UUID} -y
+fin drush entity:delete shortcut_set
+fin drush cim -y
+fin drush updb
+
+echo -e "Open ${yellow}http://${VIRTUAL_HOST}${NC} in your browser to verify the setup."
