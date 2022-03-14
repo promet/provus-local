@@ -99,8 +99,8 @@ time site_install
 
 ## TODO: Check if the config UUID doesn't match the UUID in the DB.
 #fin drush config-set system.site uuid ${UUID} -y
-fin drush entity:delete shortcut_set
-fin drush cim -y
-fin drush updb
+# drush entity:delete shortcut_set
+# drush cim -y
+# drush updb
 
 echo -e "Open ${yellow}http://${VIRTUAL_HOST}${NC} in your browser to verify the setup."
