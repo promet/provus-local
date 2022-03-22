@@ -98,7 +98,7 @@ init_settings
 time site_install
 
 # update the config folder in settings.php
-sed -i '/^\$settings\[\x27config_sync_directory\x27\]/d' site/web/sites/default/settings.php
-echo "\$settings['config_sync_directory'] = '../config/default';" >> site/web/sites/default/settings.php
+sed -i '/^\$settings\[\x27config_sync_directory\x27\]/d' /var/www/site/web/sites/default/settings.php
+echo "\$settings['config_sync_directory'] = '../config/default';" >> /var/www/site/web/sites/default/settings.php
 
 echo -e "Open ${yellow}http://${VIRTUAL_HOST}${NC} in your browser to verify the setup."
