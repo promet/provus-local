@@ -97,10 +97,8 @@ fix_permissions
 init_settings
 time site_install
 
-## TODO: Check if the config UUID doesn't match the UUID in the DB.
-#fin drush config-set system.site uuid ${UUID} -y
-# drush entity:delete shortcut_set
-# drush cim -y
-# drush updb
+# update the config folder in settings.php
+sed -i '/^\$settings\[\x27config_sync_directory\x27\]/d' web/sites/default/settings.php
+echo "\$settings['config_sync_directory'] = '../config/default';" >> web/sites/default/settings.php
 
 echo -e "Open ${yellow}http://${VIRTUAL_HOST}${NC} in your browser to verify the setup."
