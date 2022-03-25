@@ -49,7 +49,7 @@ composer_install ()
     # fresh install? no site directory.. make it!
     if [ ! -d "/var/www/site" ]; then
       echo -e "${green_bg}INSTALLING PROVUS${NC}${green} Getting latest Provus...${NC}"
-      composer create-project sst/provus-drupal site
+      composer create-project promet/provus-drupal site
     else
       # this is a site.. just run composer install
       echo -e "${green_bg}UPDATING PROVUS${NC}${green} Running composer install...${SITE_SUB_PATH} ${NC}"
