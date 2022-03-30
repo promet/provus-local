@@ -137,13 +137,23 @@ remove_nests_git
 
 if [ $CURRENT_TAG != "undefined" ]; then
   make_heading "...Preparing for production deploy, fingers crossed!"
-  git checkout -b ci-$TRAVIS_BUILD_NUMBER
+  # Make multidevs
+  make_multidev
+
+  # Clean Artifcats
   clean_artifacts
+
+  echo "...Switch to new ci-$TRAVIS_BUILD_NUMBER branch locally"
+  git checkout -b ci-$TRAVIS_BUILD_NUMBER
+
   quiet_git add -f vendor/* web/* pantheon* config/*
   quiet_git commit -m "DEPLOY: Build $CURRENT_TAG"
   echo "...Push to pantheon"
-  git push pantheon ci-$TRAVIS_BUILD_NUMBER:$REMOTE_PROD_BRANCH --force
-  make_heading "branch: $REMOTE_PROD_BRANCH"
+  git push pantheon ci-$TRAVIS_BUILD_NUMBER --force
+
+  make_heading "Push branch ci-$TRAVIS_BUILD_NUMBER to $REMOTE_PROD_BRANCH"
+  $TERMINUS_BIN build:env:merge -n $PANTHEON_SITE_ID.ci-$TRAVIS_BUILD_NUMBER --yes
+
   update_uuid "$REMOTE_PROD_ENV"
   update_site "$REMOTE_PROD_ENV"
 
