@@ -2,7 +2,23 @@
 
 CURRENT_BRANCH=`git name-rev --name-only HEAD`
 CURRENT_TAG=`git name-rev --tags --name-only $(git rev-parse HEAD)`
-TERMINUS_BIN=scripts/bin/terminus
+make_heading "Settings up Terminus for Pantheon"
+setup_terminus
+$TERMINUS_BIN self:plugin:install terminus-build-tools-plugin
+
+
+##########################
+# FUNCTIONS
+##########################
+setup_terminus() {
+  cd scripts/bin
+  curl -L https://github.com/pantheon-systems/terminus/releases/download/3.0.6/terminus.phar --output terminus
+  chmod +x terminus
+  ./terminus self:update
+  sudo ln -s ~/terminus/terminus terminus
+  TERMINUS_BIN=scripts/bin/terminus
+  cd ../../
+}
 
 quiet_git() {
   stdout=$(tempfile)
@@ -25,14 +41,22 @@ sleep 120
   echo "...Clearing caches"
   echo "========================================="
   $TERMINUS_BIN env:clear-cache $PANTHEON_SITE_ID.$1
+  # if it fails - report the fail and
+  check_error "$?"
+
   echo "========================================="
   echo "...Importing config"
   echo "========================================="
   $TERMINUS_BIN drush -n $PANTHEON_SITE_ID.$1 cim -y
+  # if it fails - report the fail and
+  check_error "$?"
+
   echo "========================================="
   echo "...Running update DB"
   echo "========================================="
   $TERMINUS_BIN drush -n $PANTHEON_SITE_ID.$1 updb -y
+  # if it fails - report the fail and
+  check_error "$?"
 }
 
 # Update the UUID of the site to match the incoming config UUID
@@ -41,6 +65,8 @@ update_uuid() {
   UUID=$(awk '{for (I=1;I<=NF;I++) if ($I == "uuid:") {print $(I+1)};}' config/default/system.site.yml)
   echo "...Setting site UUID to $UUID"
   $TERMINUS_BIN drush -n $PANTHEON_SITE_ID.$1 cset system.site uuid ${UUID} -y
+  # if it fails - report the fail and
+  check_error "$?"
 }
 
 # delete files we don't want on Pantheon and copy in some that we do.
@@ -63,6 +89,30 @@ remove_nests_git() {
   find web/ | grep .git | xargs rm -rf
   find vendor/ | grep .git | xargs rm -rf
 }
+
+check_error() {
+   if [ $1 -ne 0 ]; then
+    echo "========================================="
+    echo "...Build failure.. Deleting MD if created"
+    echo "========================================="
+    delete_md
+    exit 1
+  fi
+}
+
+make_mulitdev() {
+    echo "...Delete MD if it already exists"
+    $TERMINUS_BIN multidev:delete $PANTHEON_SITE_ID.ci-$TRAVIS_BUILD_NUMBER --delete-branch --yes
+
+    echo "...Building Mutlidev ci-$TRAVIS_BUILD_NUMBER"
+    $TERMINUS_BIN multidev:create $PANTHEON_SITE_ID.$PANTHEON_ENV ci-$TRAVIS_BUILD_NUMBER --yes
+    # if it fails - report the fail and
+    check_error "$?"
+}
+
+##########################
+# BUILD SCRIPT
+##########################
 
 make_heading "Starting Build"
 
@@ -101,10 +151,7 @@ else
   if [ "$CURRENT_BRANCH" != "$PANTHEON_ENV" ]; then
     make_heading "...Building Branch on new Multidev"
 
-    echo "...Delete MD if it already exists"
-    $TERMINUS_BIN multidev:delete $PANTHEON_SITE_ID.ci-$TRAVIS_BUILD_NUMBER --delete-branch --yes
-    echo "...Building Mutlidev ci-$TRAVIS_BUILD_NUMBER"
-    $TERMINUS_BIN multidev:create $PANTHEON_SITE_ID.$PANTHEON_ENV ci-$TRAVIS_BUILD_NUMBER --yes
+    make_multidev
 
     # Clean up the codebase before sending
     clean_artifacts
