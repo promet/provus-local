@@ -36,7 +36,7 @@ fin project reset -f
 
 echo -e "${green_bg} Step 1 ${NC}${green} Initializing NodeJs & Gulp..${NC}"
 fin exec nvm install  ${NODE_VERSION}
-fin exec nvm use ${NODE_VERSION}
+fin exec nvm alias default  ${NODE_VERSION}
 fin exec npm install gulp --global
 fin exec npm link gulp --force
 
