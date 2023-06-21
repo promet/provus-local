@@ -7,6 +7,12 @@
 # Abort if anything fails
 set -e
 
+#-------------------------- Settings --------------------------------
+
+NODE_VERSION=14.17.1
+
+#-------------------------- END: Settings --------------------------------
+
 #-------------------------- Helper functions --------------------------------
 
 # Console colors
@@ -26,6 +32,15 @@ echo ${SITE_SUB_PATH} exit
 # Stack initialization
 echo -e "${green_bg} Step 1 ${NC}${green} Initializing stack...${NC}"
 fin project reset -f
+
+
+echo -e "${green_bg} Step 1 ${NC}${green} Initializing NodeJs, Gulp and Python2 ${NC}"
+fin exec nvm install  ${NODE_VERSION}
+fin exec nvm alias default  ${NODE_VERSION}
+fin exec npm install gulp --global
+fin exec npm link gulp --force
+fin exec sudo apt update
+fin exec sudo apt install -y python2
 
 # Site initialization
 echo -e "${green_bg} Step 2 ${NC}${green} Initializing site...${NC}"
