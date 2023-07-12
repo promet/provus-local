@@ -89,5 +89,5 @@ time site_install
 # drush updb
 
 echo -e "Open ${yellow}http://${VIRTUAL_HOST}${NC} in your browser to verify the setup."
-echo -e "Or login as superuser 1 with following url:Y"
+echo -e "Or login as superuser 1 with following url:"
 drush uli
