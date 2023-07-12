@@ -36,7 +36,7 @@ All fin drush commands should happen within your site directory.
 ```
 fin build-theme [name_of_theme]
 Example:
-fin build-theme provus-bootstrap
+fin build-theme provus_bootstrap
 ```
 This assumes that this custom theme will live inside of 
 site/web/themes/custom/ directory.
