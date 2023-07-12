@@ -11,6 +11,13 @@ set -e
 
 NODE_VERSION=14.17.1
 
+# PROJECT_ROOT and DOCROOT are set as env variables in cli
+SITE_SUB_PATH="site"
+SITE_DIRECTORY="default"
+DOCROOT_PATH="${PROJECT_ROOT}/${DOCROOT}"
+SITE_CODE_PATH="${PROJECT_ROOT}/${SITE_SUB_PATH}"
+SITEDIR_PATH="${DOCROOT_PATH}/sites/${SITE_DIRECTORY}"
+
 #-------------------------- END: Settings --------------------------------
 
 #-------------------------- Helper functions --------------------------------
@@ -43,8 +50,16 @@ fin exec sudo apt update
 fin exec sudo apt install -y python2
 
 # Site initialization
-echo -e "${green_bg} Step 2 ${NC}${green} Initializing site...${NC}"
 # This runs inside cli using http://docs.docksal.io/en/v1.4.0/fin/custom-commands/#executing-commands-inside-cli
+if [[ "${1}" == "drupal-org-dev" ]];
+then
+  echo -e "${green_bg} Step 2 ${NC}${green} Running composer install for Drupal.org Development...${NC}"
+  fin composer-install drupal-org-dev
+else
+  echo -e "${green_bg} Step 2 ${NC}${green} Getting latest Provus and running composer install...${NC}"
+  fin composer-install
+fi
+echo -e "${green_bg} Step 3 ${NC}${green} Initializing site...${NC}"
 fin init-site
 
 echo -e "${green_bg} DONE! ${NC}${green} Completed all initialization steps.${NC}"

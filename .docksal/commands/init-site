@@ -44,20 +44,6 @@ copy_settings_file()
 
 #-------------------------- Functions --------------------------------
 
-composer_install ()
-{
-    # fresh install? no site directory.. make it!
-    if [ ! -d "/var/www/site" ]; then
-      echo -e "${green_bg}INSTALLING PROVUS${NC}${green} Getting latest Provus...${NC}"
-      composer create-project promet/provus-drupal site
-    else
-      # this is a site.. just run composer install
-      echo -e "${green_bg}UPDATING PROVUS${NC}${green} Running composer install...${SITE_SUB_PATH} ${NC}"
-      cd $SITE_CODE_PATH
-      composer install
-    fi
-}
-
 # Initialize local settings files
 init_settings ()
 {
@@ -92,7 +78,6 @@ site_install ()
 #-------------------------- Execution --------------------------------
 
 # Project initialization steps
-composer_install
 fix_permissions
 init_settings
 time site_install
@@ -104,3 +89,5 @@ time site_install
 # drush updb
 
 echo -e "Open ${yellow}http://${VIRTUAL_HOST}${NC} in your browser to verify the setup."
+echo -e "Or login as superuser 1 with following url:"
+drush uli
