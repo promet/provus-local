@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+#: exec_target = cli
+
+## Initialize/reinstall site
+##
+## Usage: fin composer-install
+
+# Abort if anything fails
+set -e
+
+#-------------------------- Settings --------------------------------
+
+# PROJECT_ROOT and DOCROOT are set as env variables in cli
+SITE_SUB_PATH="site"
+SITE_DIRECTORY="default"
+DOCROOT_PATH="${PROJECT_ROOT}/${DOCROOT}"
+SITE_CODE_PATH="${PROJECT_ROOT}/${SITE_SUB_PATH}"
+SITEDIR_PATH="${DOCROOT_PATH}/sites/${SITE_DIRECTORY}"
+
+#-------------------------- END: Settings --------------------------------
+
+#-------------------------- Functions --------------------------------
+
+if [[ "${1}" == "drupal-org-dev" ]];
+then
+  cd $SITE_CODE_PATH
+  composer install
+else
+  # Fresh install? No site directory.. make it!
+  if [ ! -d "/var/www/site" ]; then
+    composer create-project promet/provus-drupal ${SITE_SUB_PATH}
+  else
+    # This is a site.. just run composer install.
+    cd $SITE_CODE_PATH
+    composer install
+  fi
+fi
